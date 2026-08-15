@@ -38,7 +38,7 @@ plt.rcParams.update({
     "svg.fonttype": "none",
     "font.family": ["Arial", "Sans"],
     "pdf.fonttype": 42,
-    "mathtext.fontset": "stix",
+    "mathtext.fontset": "stix", #"dejavusans",
     "axes.spines.top": False, "axes.spines.right": False,
     "axes.linewidth": 0.75,
     "xtick.direction": "in", "ytick.direction": "in",
@@ -46,24 +46,22 @@ plt.rcParams.update({
     "xtick.major.width": 0.5, "ytick.major.width": 0.5,
 })
 
-LBL_FS = 12       # axis-label fontsize   (project convention)
-TICK_FS = 10      # tick-label fontsize   (project convention)
-LEG_FS = 12       # panel-level legend fontsize
-ANN_FS = 9.5      # in-panel annotations / compact legends (fig1 panel B style)
+AXLAB = 12     # axis-label fontsize (project convention)
+TICKLAB = 10   # tick-label fontsize (project convention)
 
 # Single color convention used throughout the whole figure (matches fig1.py):
 #   H0 = blue family, H1 = red family, S = green family (sample / wait)
 _FAMILY = {
-    "H0": ((0.00, 0.00, 0.50), (0.72, 0.78, 1.00)),   # blue  (choose H0)
-    "H1": ((0.50, 0.00, 0.00), (1.00, 0.72, 0.72)),   # red   (choose H1)
-    "S":  ((0.00, 0.35, 0.00), (0.62, 0.90, 0.62)),   # green (sample)
+    "H0": ((0.00, 0.00, 0.50), (0.72, 0.78, 1.00)),
+    "H1": ((0.50, 0.00, 0.00), (1.00, 0.72, 0.72)),
+    "S":  ((0.00, 0.35, 0.00), (0.62, 0.90, 0.62)),
 }
 def fcol(key, frac=0.0):
     d, l = _FAMILY[key]; frac = float(np.clip(frac, 0, 1))
     return tuple(a + frac * (b - a) for a, b in zip(d, l))
 
-PALE_H0 = (0.55, 0.62, 0.92)     # pale blue -- mean log-odds of chosen-H0 trials
-PALE_H1 = (0.92, 0.55, 0.55)     # pale red  -- mean log-odds of chosen-H1 trials
+PALE_H0 = (0.92, 0.55, 0.55)     # pale blue/red mean-line accents (unused here)
+PALE_H1 = (0.55, 0.62, 0.92)
 
 # Fixed pastel trio for trial-type coding in panels D, E, G, H
 PASTEL = {"H0": "blue", "H1": "red", "S": "green"}
@@ -77,8 +75,7 @@ TAU = 0.04
 NTRIAL = 50_000
 MAX_T = 10
 DEADLINE = 11
-BW = 0.1                   # histogram bin width for the density columns
-COL_W = 0.85               # width of one density column, in time-step units
+BW = 0.1
 YMIN, YMAX = -1.6, 1.6
 YMIN_F, YMAX_F = -1.5, 1.5 #-2.0, 2.0
 
@@ -122,7 +119,7 @@ def panel_A(ax_sch, ax_dist, res):
                                     fill=False, lw=0.9, ec="0.2", zorder=3))
         ax_sch.text(cx, cy + 0.06, gl, ha="center", va="center", fontsize=14, zorder=4)
         ax_sch.text(cx, cy - h / 2 - 0.14, lab, ha="center", va="top",
-                    fontsize=LBL_FS, zorder=4)
+                    fontsize=12, zorder=4)
         if gl:
             yb = cy - h / 2 - 0.55
             ax_sch.add_patch(FancyArrowPatch((cx - 0.18, yb), (cx - 0.95, yb - 0.35),
@@ -136,9 +133,9 @@ def panel_A(ax_sch, ax_dist, res):
     cx1, cy1 = centers[1]
     yb1 = cy1 - h / 2 - 0.55
     ax_sch.text(cx1 - 0.95, yb1 - 0.55, r"choose $H_0$", color=fcol("H0"),
-                fontsize=LBL_FS, ha="center", va="top")
+                fontsize=12, ha="center", va="top")
     ax_sch.text(cx1 + 0.95, yb1 - 0.55, r"choose $H_1$", color=fcol("H1"),
-                fontsize=LBL_FS, ha="center", va="top")
+                fontsize=12, ha="center", va="top")
 
     # green dashed sampling arcs, diagonally between consecutive boxes
     for i in range(len(centers) - 2):
@@ -152,13 +149,13 @@ def panel_A(ax_sch, ax_dist, res):
     mx = np.mean([c[0] for c in centers[:3]])
     my = np.mean([c[1] for c in centers[:3]]) + 1.05
     ax_sch.text(mx, my, r"sample ($-c$)",
-                ha="center", fontsize=LBL_FS, color=fcol("S"), rotation=18)
+                ha="center", fontsize=12, color=fcol("S"), rotation=18)
 
     cxl, cyl = centers[-1]
     ax_sch.text(cxl + 0.05, cyl, "choice:\n+1 / 0", ha="center",
-                va="center", fontsize=TICK_FS, color="0.15")
+                va="center", fontsize=10, color="0.15")
     ax_sch.text(0.0, ax_sch.get_ylim()[1] * 0.99, "Sequential sampling task",
-                fontsize=LBL_FS, ha="left", va="top")
+                fontsize=12, ha="left", va="top")
 
     # cue-frequency distribution, attached to the right of the diagonal
     ev = res.stimuli.evidence_log10
@@ -175,15 +172,15 @@ def panel_A(ax_sch, ax_dist, res):
         ax_dist.plot(xv, ymark, marker=mk, ms=7, color="0.25", clip_on=False, ls="none")
     ax_dist.set_xticks(ev)
     ax_dist.set_xticklabels([f"{v:+.1f}" if i in [0, 2, 4, 6, 9, 11, 13, 15, 17] else ""
-                             for i, v in enumerate(ev)], fontsize=TICK_FS)
-    ax_dist.tick_params(axis="x", which="major", pad=14, labelsize=TICK_FS)
-    ax_dist.set_xlabel(r"Cue log odds", fontsize=LBL_FS)
-    ax_dist.xaxis.set_label_coords(0.5, -0.105)
-    ax_dist.tick_params(axis="y", labelsize=TICK_FS)
-    ax_dist.set_ylabel("Frequency", fontsize=LBL_FS)
+                             for i, v in enumerate(ev)], fontsize=TICKLAB)
+    ax_dist.tick_params(axis="x", which="major", pad=16, labelsize=TICKLAB)
+    ax_dist.set_xlabel(r"Cue log odds", fontsize=AXLAB)
+    ax_dist.xaxis.set_label_coords(0.5, -0.14)
+    ax_dist.tick_params(axis="y", labelsize=TICKLAB)
+    ax_dist.set_ylabel("Frequency", fontsize=AXLAB)
     ax_dist.set_ylim(0, max(pa.max(), pb.max()) * 1.35)
     ax_dist.legend(
-        frameon=False, fontsize=LEG_FS, loc="upper center",
+        frameon=False, fontsize=12, loc="upper center",
         bbox_to_anchor=(0.5, 0.96), ncol=2,
         handletextpad=0.3, columnspacing=0.9, borderaxespad=0.0,
     )
@@ -201,9 +198,9 @@ def panel_B(ax_v, ax_eq, res):
     for bb in (res.lower_b, res.upper_b):
         ax_v.axvline(bb, color="0.75", ls="--", lw=1.0, zorder=0)
     ax_v.set_xlim(0, 1); ax_v.set_ylim(-0.03, 1.05)
-    ax_v.set_xlabel(r"Belief ($b$)", fontsize=LBL_FS)
-    ax_v.set_ylabel("Value", fontsize=LBL_FS)
-    ax_v.tick_params(labelsize=TICK_FS)
+    ax_v.set_xlabel(r"Belief ($b$)", fontsize=AXLAB)
+    ax_v.set_ylabel("Value", fontsize=AXLAB)
+    ax_v.tick_params(labelsize=TICKLAB)
 
     # anchor points on each curve (near the right edge, in data coords)
     b0 = 0.86
@@ -230,7 +227,7 @@ def panel_B(ax_v, ax_eq, res):
             annotation_clip=False,
         )
         ax_eq.text(0.06, eq_ypos[key], eq_text[key], color=fcol(key),
-                    fontsize=ANN_FS, ha="left", va="center")
+                    fontsize=9.5, ha="left", va="center")
 
 
 # ==========================================================================
@@ -247,18 +244,18 @@ def panel_policy_mini(ax_top, ax_bot, res, show_legend):
         leg = [Line2D([0], [0], color=fcol("S"), lw=2, label=r"$p(\mathrm{sample})$"),
                Line2D([0], [0], color=fcol("H0"), lw=2, label=r"$p(\mathrm{choose}\ H_0)$"),
                Line2D([0], [0], color=fcol("H1"), lw=2, label=r"$p(\mathrm{choose}\ H_1)$")]
-        ax_bot.legend(handles=leg, frameon=False, fontsize=LEG_FS, loc="upper center",
+        ax_top.legend(handles=leg, frameon=False, fontsize=12, loc="upper center",
                       ncol=1, handlelength=1.0, handletextpad=0.3,
                       columnspacing=0.8, borderaxespad=0.2,
-                      bbox_to_anchor=(0.5, 0.85))
+                      bbox_to_anchor=(0.5, 1.55))
 
-    ax_top.set_ylabel(r"$p(\mathrm{sample})$", fontsize=LBL_FS)
-    ax_bot.set_ylabel(r"$p(\mathrm{choose})$", fontsize=LBL_FS)
-    ax_bot.set_xlabel(r"Belief ($b$)", fontsize=LBL_FS)
+    ax_top.set_ylabel(r"$p(\mathrm{sample})$", fontsize=AXLAB)
+    ax_bot.set_ylabel(r"$p(\mathrm{choose})$", fontsize=AXLAB)
+    ax_bot.set_xlabel(r"Belief ($b$)", fontsize=AXLAB)
     for ax in (ax_top, ax_bot):
         ax.set_xlim(0, 1); ax.set_ylim(-0.06, 1.12)
         ax.set_yticks([0, 0.5, 1])
-        ax.tick_params(labelsize=TICK_FS)
+        ax.tick_params(labelsize=TICKLAB)
         for bb in betas:
             ax.axvline(bb, color="0.75", ls="--", lw=1.0, zorder=0)
     plt.setp(ax_top.get_xticklabels(), visible=False)
@@ -280,43 +277,31 @@ def panel_field(ax, res, mode, show_legend):
     # ax.axhline(0, color=(1, 1, 1, 0.6), lw=0.6, zorder=1)
     ax.set_xlim(0.5, MAX_T + 0.5); ax.set_ylim(YMIN, YMAX)
     ax.set_xticks(range(1, MAX_T + 1))
-    ax.set_xlabel("Time step", fontsize=LBL_FS)
-    ax.set_ylabel(r"Cumulative evidence (log odds)", fontsize=LBL_FS)
-    ax.tick_params(labelsize=TICK_FS)
+    ax.set_xlabel("Time step", fontsize=AXLAB)
+    ax.set_ylabel(r"Cumulative evidence (log odds)", fontsize=AXLAB)
+    ax.tick_params(labelsize=TICKLAB)
 
     if show_legend:
         leg = [Patch(facecolor=PASTEL["H0"], edgecolor="none", alpha=0.4, label=r"$p(\mathrm{choose}\ H_0)$"),
                Patch(facecolor=PASTEL["S"], edgecolor="none", alpha=0.4, label=r"$p(\mathrm{sample})$"),
                Patch(facecolor=PASTEL["H1"], edgecolor="none", alpha=0.4, label=r"$p(\mathrm{choose}\ H_1)$")]
-        ax.legend(handles=leg, frameon=False, fontsize=LEG_FS, ncol=3,
+        ax.legend(handles=leg, frameon=False, fontsize=12, ncol=3,
                   loc="lower center", bbox_to_anchor=(0.5, 1.02),
                   handletextpad=0.4, columnspacing=1.0, borderaxespad=0.0
 )
     
 
 # ==========================================================================
-# Panels E, H -- 50k-trial simulations, density columns per time step
+# Panel E -- deterministic 50k-trial sim, histogram columns
 # ==========================================================================
-def _mean_segments(ax, y_all, a_all, t, col_w=COL_W):
-    """Horizontal segment at the AVERAGE log odds of the committed trials of
-    each type, spanning the width of that time step's density column.
-    Shared by fig1.py panels E / H and fig3.py panels C / D."""
-    for a, col in ((0, PALE_H0), (1, PALE_H1)):
-        y = y_all[a_all == a]
-        if y.size > 5:
-            ax.plot([t, t + col_w], [y.mean(), y.mean()], color=col, lw=1.5)
-
-
-def panel_sim_hist(ax, df, res, col_w=COL_W, show_legend=True):
-    edges = np.arange(YMIN - BW / 2.0, YMAX + BW / 2.0 + 1e-9, BW)
+def panel_sim_hist(ax, df, res, col_w=0.85, show_legend=True):
+    edges = np.arange(YMIN - 0.05, YMAX + 0.05 + 1e-9, BW)
     yc = edges[:-1] + BW / 2.0
     for t in range(1, MAX_T + 1):
         dft = df[df["time_step"] == t]
-        y_all = dft["ground_L"].to_numpy()
-        a_all = dft["action"].to_numpy()
         hist, maxc = {}, 0.0
         for a in (0, 1, 2):
-            y = y_all[a_all == a]
+            y = dft.loc[dft["action"] == a, "ground_L"].to_numpy()
             h, _ = np.histogram(y, bins=edges)
             hist[a] = h.astype(float)
             maxc = max(maxc, h.max())
@@ -325,7 +310,6 @@ def panel_sim_hist(ax, df, res, col_w=COL_W, show_legend=True):
         for a, col in ((2, PASTEL["S"]), (0, PASTEL["H0"]), (1, PASTEL["H1"])):
             ax.fill_betweenx(yc, t, t + hist[a] / maxc * col_w, step="mid",
                              color=col, alpha=0.3, lw=0)
-        _mean_segments(ax, y_all, a_all, t, col_w)
 
     for Lb in (res.lower_l, res.upper_l):
         ax.plot([0.6, MAX_T + col_w + 0.2], [Lb, Lb],
@@ -334,27 +318,28 @@ def panel_sim_hist(ax, df, res, col_w=COL_W, show_legend=True):
     ax.set_xlim(0.6, MAX_T + col_w + 0.3)
     ax.set_ylim(YMIN, YMAX)
     ax.set_xticks(range(1, MAX_T + 1))
-    ax.set_xlabel("Time step", fontsize=LBL_FS)
-    ax.set_ylabel("Cumulative evidence (log odds)", fontsize=LBL_FS)
-    ax.tick_params(labelsize=TICK_FS)
+    ax.set_xlabel("Time step", fontsize=AXLAB)
+    ax.set_ylabel("Cumulative evidence (log odds)", fontsize=AXLAB)
+    ax.tick_params(labelsize=TICKLAB)
     if show_legend:
         leg = [Patch(facecolor=PASTEL["H0"], edgecolor="none", alpha=0.3, label=r"chosen $H_0$"),
                Patch(facecolor=PASTEL["S"], edgecolor="none", alpha=0.3, label=r"sampling"),
                Patch(facecolor=PASTEL["H1"], edgecolor="none", alpha=0.3, label=r"chosen $H_1$")]
-        ax.legend(handles=leg, frameon=False, fontsize=LEG_FS, ncol=3,
+        ax.legend(handles=leg, frameon=False, fontsize=12, ncol=3,
                   loc="lower center", bbox_to_anchor=(0.5, 1.02),
                   handletextpad=0.4, columnspacing=1.0, borderaxespad=0.0)
 
 
-def panel_sim_kde(ax, df, res, col_w=COL_W, show_legend=False):
+# ==========================================================================
+# Panel H -- soft 50k-trial sim, smoothed (KDE) distributions
+# ==========================================================================
+def panel_sim_kde(ax, df, res, col_w=0.82, show_legend=True):
     l_density = np.linspace(YMIN_F, YMAX_F, 300)
     for t in range(1, MAX_T + 1):
         dft = df[df["time_step"] == t]
-        y_all = dft["ground_L"].to_numpy()
-        a_all = dft["action"].to_numpy()
         densities, maxd = {}, 0.0
         for a in (0, 1, 2):
-            y = y_all[a_all == a]
+            y = dft.loc[dft["action"] == a, "ground_L"].to_numpy()
             if y.size > 15 and np.std(y) > 1e-3:
                 dens = gaussian_kde(y, bw_method=0.35)(l_density) * y.size
             else:
@@ -366,7 +351,6 @@ def panel_sim_kde(ax, df, res, col_w=COL_W, show_legend=False):
         for a, col in ((2, PASTEL["S"]), (0, PASTEL["H0"]), (1, PASTEL["H1"])):
             ax.fill_betweenx(l_density, t, t + densities[a] / maxd * col_w,
                              color=col, alpha=0.3, lw=0)
-        _mean_segments(ax, y_all, a_all, t, col_w)
 
     ps = res.p_sample
     cross = np.where(np.diff(np.sign(ps - 0.5)) != 0)[0]
@@ -377,24 +361,14 @@ def panel_sim_kde(ax, df, res, col_w=COL_W, show_legend=False):
     ax.set_xlim(0.6, MAX_T + col_w + 0.3)
     ax.set_ylim(YMIN_F, YMAX_F)
     ax.set_xticks(range(1, MAX_T + 1))
-    ax.set_xlabel("Time step", fontsize=LBL_FS)
-    ax.set_ylabel("Cumulative evidence (log odds)", fontsize=LBL_FS)
-    ax.tick_params(labelsize=TICK_FS)
-    if show_legend:
-        leg = [Patch(facecolor=PASTEL["H0"], edgecolor="none", alpha=0.3, label=r"chosen $H_0$"),
-               Patch(facecolor=PASTEL["S"], edgecolor="none", alpha=0.3, label=r"sampling"),
-               Patch(facecolor=PASTEL["H1"], edgecolor="none", alpha=0.3, label=r"chosen $H_1$")]
-        ax.legend(handles=leg, frameon=False, fontsize=LEG_FS, ncol=3,
-                  loc="lower center", bbox_to_anchor=(0.5, 1.02),
-                  handletextpad=0.4, columnspacing=1.0, borderaxespad=0.0)
+    ax.set_xlabel("Time step", fontsize=AXLAB)
+    ax.set_ylabel("Cumulative evidence (log odds)", fontsize=AXLAB)
+    ax.tick_params(labelsize=TICKLAB)
 
-
-# ==========================================================================
-# Layout
-# ==========================================================================
-def add_label(ax, letter, dx=-40, dy=8):
+# --------------------------------------------------------------------------
+def add_label(ax, letter, x_off=-40, y_off=8):
     ax.annotate(letter, xy=(0, 1), xycoords="axes fraction",
-                xytext=(dx, dy), textcoords="offset points",
+                xytext=(x_off, y_off), textcoords="offset points",
                 fontsize=13, fontweight="bold", va="bottom",
                 annotation_clip=False)
 
@@ -452,10 +426,11 @@ def main():
     fig.savefig(os.path.join(outdir, "fig1.svg"))
     fig.savefig(os.path.join(outdir, "fig1.png"), dpi=200)
     print(
-        f"Fig saved in {outdir}\n"
-        f"deterministic boundary L=({rdet.lower_l:.3f}, {rdet.upper_l:.3f}); "
-        f"soft p_sample in [{rsoft.p_sample.min():.3f}, {rsoft.p_sample.max():.3f}]")
+    f"Fig saved in {outdir}\n"
+    f"det L=({rdet.lower_l:.3f}, {rdet.upper_l:.3f}); "
+    f"soft p_sample in [{rsoft.p_sample.min():.3f}, {rsoft.p_sample.max():.3f}]")
+    # print("Fig saved in %s /n det L=(%.3f, %.3f); soft p_sample in [%.3f, %.3f]" % (outdir,
+        # rdet.lower_l, rdet.upper_l, rsoft.p_sample.min(), rsoft.p_sample.max()))
 
 if __name__ == "__main__":
     main()
-    

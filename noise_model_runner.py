@@ -1,5 +1,5 @@
 """
-Unified runner for the six noisy-observer notebooks.
+Unified runner for the six noisy observers.
 
 Examples
 --------
@@ -43,7 +43,6 @@ from scipy.ndimage import gaussian_filter
 from scipy.stats import norm
 
 plt.rcParams.update({
-    # 'figure.figsize': (3.35, 2.5),   # 单栏尺寸
     'font.family': 'Arial',
     'axes.labelsize': 9,
     'axes.titlesize': 8,
@@ -81,10 +80,10 @@ class ModelConfig:
     seed: int = 1
     mu: float = 2.2
     sigma: float = 5.0
-    l_min: float = -4.0
-    l_max: float = 4.0
+    l_min: float = 3.5 #-13
+    l_max: float = 3.5 # 13
     n_l: int = 2001
-    n_gh: int = 201
+    n_gh: int = 401
     tol: float = 1e-9
     max_iter: int = 5000
 
@@ -161,45 +160,6 @@ def log10_odds(b_value: Union[np.ndarray, float], eps: float = 1e-12) -> Union[n
     b_clipped = np.clip(b_value, eps, 1.0 - eps)
     return np.log10(b_clipped / (1.0 - b_clipped))
 
-'''
-def build_stimuli(config: ModelConfig) -> StimulusSet:
-    x = np.linspace(-15, 15, 500)
-    pdf_left = norm.pdf(x, -config.mu, config.sigma)
-    pdf_right = norm.pdf(x, config.mu, config.sigma)
-    log_ratio = np.log10(pdf_right / pdf_left)
-
-    evidence_log10 = np.array(
-        [
-            -0.8,
-            -0.7,
-            -0.6,
-            -0.5,
-            -0.4,
-            -0.3,
-            -0.2,
-            -0.1,
-            0.1,
-            0.2,
-            0.3,
-            0.4,
-            0.5,
-            0.6,
-            0.7,
-            0.8,
-        ],
-        dtype=float,
-    )
-
-    x_targets = np.interp(evidence_log10, log_ratio, x)
-    p_b_raw = norm.pdf(x_targets, config.mu, config.sigma)
-    p_a_raw = norm.pdf(x_targets, -config.mu, config.sigma)
-
-    return StimulusSet(
-        evidence_log10=evidence_log10,
-        p_a=p_a_raw / p_a_raw.sum(),
-        p_b=p_b_raw / p_b_raw.sum(),
-    )
-'''
 def build_stimuli(config: ModelConfig) -> StimulusSet:
     """Closed-form stimulus set for the equal-variance Gaussian generative model.
 
@@ -347,7 +307,7 @@ def compute_model(
     cfg = config or ModelConfig()
 
     n_gh = cfg.n_gh
-    gh_x, gh_w = np.polynomial.hermite.hermgauss(n_gh)
+    gh_x, gh_w = np.polynomial.hermite.hermgauss(n_gh) # numerical approximation of the Gaussian kernel
     stimuli = build_stimuli(cfg)
 
     l_grid = np.linspace(cfg.l_min, cfg.l_max, cfg.n_l)
@@ -357,7 +317,7 @@ def compute_model(
     v_choose = np.maximum(q0, q1)
     sigma_for_value = cfg.sigma_repr if noise_kind in {"representation", "mixed"} else 0.0
 
-    if horizon_kind == "finite":
+    if horizon_kind == "finite": # backward induction of V_star based on Bellman operator for finite horizon
         v = np.zeros((cfg.deadline + 1, cfg.n_l))
         q_wait = np.zeros((cfg.deadline + 1, cfg.n_l))
         p_sample = np.zeros((cfg.deadline + 1, cfg.n_l))
@@ -400,7 +360,7 @@ def compute_model(
         if verbose:
             print_model_summary(noise_kind, horizon_kind, cfg, lower_l, upper_l, lower_b, upper_b)
 
-    else:
+    else: # induction of V_star using value iteration strategy for infinite horizon
         v = v_choose.copy()
         q_wait = np.zeros_like(l_grid)
 
